@@ -22,7 +22,13 @@
                 <span>도착 정보</span>
             </div>
             <div class="btnContainer c-flex gap-3 gap-sm-4">
-                <button type="button" id="searchBar" class="btn c-btn-icon">
+                <button
+                    type="button"
+                    id="searchBar"
+                    class="btn c-btn-icon"
+                    data-bs-toggle="modal"
+                    data-bs-target="#searchModal"
+                >
                     <span class="material-symbols-outlined">&#xe8b6;</span>
                     <span id="searchButtonBar" class="d-none d-sm-inline mx-2">정류장/역 추가</span>
                 </button>
@@ -31,7 +37,40 @@
                 </button>
             </div>
         </header>
-        <main></main>
+        <main>
+            <div id="searchModal" class="modal" tabindex="-1">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header p-2">
+                            <div class="input-group">
+                                <button
+                                    type="button"
+                                    class="btn c-btn-icon d-sm-none d-flex"
+                                    data-bs-dismiss="modal"
+                                    aria-label="닫기(small사이즈 전용)"
+                                >
+                                    <span class="material-symbols-outlined">&#xe5c4;</span>
+                                </button>
+                                <span
+                                    class="input-group-text material-symbols-outlined d-none d-sm-inline bg-transparent border-0 fs-4"
+                                    >&#xe8b6;</span
+                                >
+                                <input
+                                    id="searchInput"
+                                    class="form-control ps-0 border-0"
+                                    type="text"
+                                    placeholder="정류장/역명을 입력하세요."
+                                    aria-label="정류장/역명을 입력하세요."
+                                />
+                            </div>
+                        </div>
+                        <div class="modal-body">
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
         <footer></footer>
 
         <script
@@ -44,5 +83,8 @@
             integrity="sha384-BBtl+eGJRgqQAUMxJ7pMwbEyER4l1g+O15P+16Ep7Q9Q+zqX6gSbd85u4mG4QzX+"
             crossorigin="anonymous"
         ></script>
+        <script
+        src="./index.js" 
+    ></script>
     </body>
 </html>

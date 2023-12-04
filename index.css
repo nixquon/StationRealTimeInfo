@@ -3,8 +3,8 @@
     align-items: center !important;
 }
 .c-btn-icon{
-    display: flex !important;
-    align-items: center !important;
+    display: flex;
+    align-items: center;
     padding: var(--bs-btn-padding-y);
 }
 
@@ -17,7 +17,7 @@ header {
     background-color: black;
     color: white;
     height: 70px;
-    
+
     .btnContainer>.btn{
         --bs-btn-color: #fff;
         --bs-btn-border-color: #343a40;
@@ -45,4 +45,8 @@ header {
     width: 10rem;
     text-align: left;
     font-size: 0.9rem;
+}
+main{}
+#searchInput:focus{
+    box-shadow: none;
 }
