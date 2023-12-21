@@ -681,12 +681,16 @@ requestSubwaySheet().then((result) => {
 
 fetch("./resource/국토교통부_전국 버스정류장 위치정보_20231016.csv") // 버스 데이터 세팅
     .then((res) => {
+        console.log(res);
         return res.arrayBuffer();
     })
     .then((buffer) => {
+        console.log(buffer);
         let decoder = new TextDecoder('euc-kr');
         let decodedData = decoder.decode(new Uint8Array(buffer));
+        console.log(decodedData);
         let busJSON = csvToJSON(decodedData);
+        console.log(busJSON);
         busJSON.forEach((element) => {
             let station = new Station(element["정류장명"], Station.BUS, element["정류장번호"]);
             station.latitude = element["위도"];
