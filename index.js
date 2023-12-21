@@ -169,12 +169,13 @@ class Station {
 
         if (this.type == Station.SUBWAY) {
             name = name + "역";
+            icon = "&#xe56f;"
         }
 
         element.innerHTML = `
         <div class="card-header c-flex justify-content-between bg-transparent">
             <div class="d-flex">
-                <span class="material-symbols-outlined fs-1 me-2" alt="bus Station">${icon}</span>
+                <span class="material-symbols-outlined fs-1 me-2" alt="${this.type} Station">${icon}</span>
                 <div>
                     <h5 class="card-title">${name}</h5>
                     <h6 class="card-subtitle text-muted">${this.info}</h6>
@@ -240,15 +241,15 @@ function addSearchItem(station) {
     var icon = "&#xe530;";
     let parameters = `${station.latitude}, ${station.longitude}`;
 
-    if (station.type == Station.SUBWAY) {
+    if (station.type === Station.SUBWAY) {
         name = name + "역";
-        icon = "&#xe56f";
+        icon = "&#xe56f;";
         parameters = "";
     }
     searchItemElement.innerHTML = `
     <div class="card-body d-flex justify-content-between align-items-end">
         <div class="d-flex">
-            <span class="material-symbols-outlined fs-1 me-2" alt="bus Station">${icon}</span>
+            <span class="material-symbols-outlined fs-1 me-2" alt="${station.type} Station">${icon}</span>
             <div class="d-inline-block">
                 <h5 class="card-title">${name}</h5>
                 <h6 class="card-subtitle mb-2 text-muted">${station.info}</h6>
