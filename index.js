@@ -13,7 +13,13 @@ class Station {
     }
 
     get info() {
-        if (this.type === Station.BUS) return this.busId;
+        if (this.type === Station.BUS) {
+            let result = this.busCityName;
+            if (!this.busCityName.includes(this.busControlCityName))
+                result += `<span style="color: #ffa500">(${this.#busControlCityName})</span>`;
+            result += " " + this.busId;
+            return result;
+        }
         return subwayLine[this.subwayId];
     }
 
@@ -51,6 +57,28 @@ class Station {
         if (this.type === Station.BUS) {
             if (isNaN(value)) this.#busCityCode = "00";
             else this.#busCityCode = value.toString();
+        }
+    }
+
+    #busCityName;
+    get busCityName() {
+        return this.#busCityName;
+    }
+    /** @param {string} value */
+    set busCityName(value) {
+        if (this.type === Station.BUS) {
+            this.#busCityName = value;
+        }
+    }
+
+    #busControlCityName;
+    get busControlCityName() {
+        return this.#busControlCityName;
+    }
+    /** @param {string} value */
+    set busControlCityName(value) {
+        if (this.type === Station.BUS) {
+            this.#busControlCityName = value;
         }
     }
 
@@ -144,17 +172,24 @@ class Station {
         }
 
         element.innerHTML = `
-        <div class="card-header c-flex bg-transparent">
-            <span class="material-symbols-outlined fs-1 me-2" alt="bus Station">${icon}</span>
-            <div>
-                <h5 class="card-title">${name}</h5>
-                <h6 class="card-subtitle text-muted">${this.info}</h6>
+        <div class="card-header c-flex justify-content-between bg-transparent">
+            <div class="d-flex">
+                <span class="material-symbols-outlined fs-1 me-2" alt="bus Station">${icon}</span>
+                <div>
+                    <h5 class="card-title">${name}</h5>
+                    <h6 class="card-subtitle text-muted">${this.info}</h6>
+                </div>
             </div>
+            <button type="button" class="btn btn-outline-dark c-btn-icon removeStation">
+            <span class="material-symbols-outlined"> &#xe872;</span> </button>
         </div>
         <div class="card-body"></div>
         </div>`;
         this.#element = element;
         this.#body = document.createElement("div");
+        this.element.querySelector("div .removeStation").addEventListener("click", () => {
+            removeStationItem(this);
+        });
         element.querySelector(".card-body").appendChild(this.#body);
     }
 
@@ -265,13 +300,17 @@ function showMap(station) {
 
 /** @param {Station} station */
 function addStationItem(station) {
+    if (station.id in selectedStations) {
+        return;
+    }
     let stationsContainer = document.querySelector("#stationsContainer");
 
     let colEliment = document.createElement("div");
-    colEliment.className = "col";
+    colEliment.className = "col mb-3";
     colEliment.appendChild(station.element);
 
     stationsContainer.appendChild(colEliment);
+    selectedStations.push(station.id);
 
     updateStationArrivalInfo(station);
 }
@@ -347,14 +386,14 @@ function updateStationArrivalInfo(station) {
                 if (value.time > 0) {
                     time = `(${value.time}초)`;
                 }
-                info.innerHTML = `<sapn>${value.endStation}</sapn>
-                <sapn style="color: #52a1e9; word-break:keep-all"
-                    >${value.msg}</sapn
+                info.innerHTML = `<span>${value.endStation}</span>
+                <span style="color: #52a1e9; word-break:keep-all"
+                    >${value.msg}</span
                 >
-                <sapn
+                <span
                     class="text-muted text-nowrap"
                     style="font-size: 0.9rem"
-                    >${time}</sapn
+                    >${time}</span
                 >`;
                 infos.appendChild(info);
             });
@@ -377,20 +416,106 @@ function updateStationArrivalInfo(station) {
                 if (value.time > 0) {
                     time = `(${value.time}초)`;
                 }
-                info.innerHTML = `<sapn>${value.endStation}</sapn>
-                <sapn style="color: #52a1e9; word-break:keep-all"
-                    >${value.msg}</sapn
+                info.innerHTML = `<span>${value.endStation}</span>
+                <span style="color: #52a1e9; word-break:keep-all"
+                    >${value.msg}</span
                 >
-                <sapn
+                <span
                     class="text-muted text-nowrap"
                     style="font-size: 0.9rem"
-                    >${time}</sapn
+                    >${time}</span
                 >`;
                 infos.appendChild(info);
             });
             body.appendChild(infos);
+        } else {
+            if (!json.response.header.resultCode === "00") {
+                alert("Subway API Error: " + json.response.header.resultCode);
+                return;
+            }
+            let item = json.response.body.items.item;
+            let body = station.body;
+
+            if (json.response.body.totalCount == 0) {
+                body.className = "text-center";
+                let noneInfo = document.createElement("span");
+                noneInfo.innerHTML = `도착 예정 정보 없음`;
+                body.appendChild(noneInfo);
+                return;
+            }
+            if (json.response.body.totalCount == 1) {
+                item = [item];
+            } else {
+                item.sort((obj1, obj2) => {
+                    return obj1.arrtime - obj2.arrtime;
+                });
+            }
+
+            let arrInfo = {};
+            for (const [key, value] of Object.entries(item)) {
+                let busName = value.routeno.toString();
+                if (!arrInfo[busName]) {
+                    arrInfo[busName] = [];
+                }
+                let info = { arrtime: 0, beforeCount: 0, type: "" };
+                info["arrtime"] = Number(value.arrtime);
+                info["beforeCount"] = value.arrprevstationcnt;
+                info["type"] = value.routetp.replace("버스", "");
+                arrInfo[busName].push(info);
+            }
+
+            for (const [key, value] of Object.entries(arrInfo)) {
+                let busInfos = document.createElement("div");
+                busInfos.className = "c-flex justify-content-between";
+                busInfos.innerHTML = `<div>
+                <span class="text-nowrap">${key}</span>
+                <span class="text-muted text-nowrap">(${value[0].type})</span>
+            </div>`;
+                let busArriveInfos = document.createElement("div");
+                busArriveInfos.className =
+                    "d-flex flex-column flex-sm-row gap-sm-2 align-items-end";
+                let max = 1;
+                if (value.length > 1) {
+                    max++;
+                }
+                console.log(max);
+                for (let i = 0; i < max; i++) {
+                    let busInfo = document.createElement("div");
+                    busInfo.className = "text-nowrap";
+                    let time = parseInt(value[i].arrtime / 60);
+                    let timeText = "";
+                    if (time == 0) {
+                        timeText = "잠시후";
+                    } else {
+                        timeText = time + "분";
+                    }
+                    busInfo.innerHTML = `<span style="color:#ff5d5d">${timeText}</span>
+                    <span class="text-muted text-nowrap">${value[i].beforeCount}정류장</span>`;
+                    busArriveInfos.appendChild(busInfo);
+                    if (max - i == 2) {
+                        let vr = document.createElement("div");
+                        vr.className = "vr d-none d-sm-inline-block";
+                        busArriveInfos.appendChild(vr);
+                    }
+                }
+                busInfos.appendChild(busArriveInfos);
+                body.appendChild(busInfos);
+            }
         }
     });
+}
+
+function removeStationItem(station) {
+    let stationsContainer = document.querySelector("#stationsContainer div");
+    console.log(stationsContainer);
+    stationsContainer.removeChild(station.element);
+    let stationIdx;
+    selectedStations.forEach((id, idx) => {
+        if (id == station.id) {
+            stationIdx = idx;
+        }
+    });
+    selectedStations.slice(stationIdx, 1);
 }
 
 function csvToJSON(csv_string) {
@@ -508,6 +633,7 @@ function disassembleHangul(hangul) {
     return result;
 }
 
+var selectedStations = [];
 var stationDictionary = {};
 var subwayList = [{ SUBWAY_ID: 1001, STATN_ID: 1001000100, STATN_NM: "소요산", 호선이름: "1호선" }];
 var subwayLine = {};
@@ -538,6 +664,8 @@ fetch("./resource/국토교통부_전국 버스정류장 위치정보_20231016.c
             station.latitude = element["위도"];
             station.longitude = element["경도"];
             station.busCityCode = element["도시코드"];
+            station.busCityName = element["도시명"];
+            station.busControlCityName = element["관리도시명"];
             station.busId = element["모바일단축번호"];
             stationDictionary[element["정류장번호"]] = station;
         });
