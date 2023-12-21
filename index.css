@@ -63,6 +63,7 @@ main {
     border: none;
     border-radius: 50%;
     cursor: pointer;
+    z-index: 1;
 }
 
 #refreshButton:hover {
