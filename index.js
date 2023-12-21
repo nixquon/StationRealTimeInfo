@@ -13,8 +13,8 @@ class Station {
     }
 
     get info() {
-        if (this.type === Station.BUS) return this.id;
-        return this.nextStation.name + " 방면";
+        if (this.type === Station.BUS) return this.busId;
+        return subwayLine[this.subwayId];
     }
 
     #id;
@@ -23,8 +23,31 @@ class Station {
     }
     /** @param {string} value */
     set id(value) {
-        if (isNaN(value)) this.#id = "00000";
-        else this.#id = value;
+        this.#id = value.toString();
+    }
+
+    #busId;
+    get busId() {
+        return this.#busId;
+    }
+    /** @param {string} value */
+    set busId(value) {
+        if (this.type === Station.BUS) {
+            if (isNaN(value)) this.#busId = "00000";
+            else this.#busId = value.toString();
+        }
+    }
+
+    #busCityCode;
+    get busCityCode() {
+        return this.#busCityCode;
+    }
+    /** @param {string} value */
+    set busCityCode(value) {
+        if (this.type === Station.BUS) {
+            if (isNaN(value)) this.#busCityCode = "00";
+            else this.#busCityCode = value.toString();
+        }
     }
 
     #subwayId;
@@ -52,7 +75,7 @@ class Station {
 
     #nextStation;
     get nextStation() {
-        if (!this.#nextStation) this.#nextStation = new Station("2역", Station.SUBWAY, "101");
+        if (!this.#nextStation) this.#nextStation;
         return this.#nextStation;
     }
 
@@ -82,10 +105,18 @@ class Station {
         this.#longitude = Number(value);
     }
 
-    #eliemnt;
-    get eliemnt() {
-        if (!this.#eliemnt) this.InitStationEliment();
-        return this.#eliemnt;
+    apiJson;
+
+    #element;
+    get element() {
+        if (!this.#element) this.InitStationEliment();
+        return this.#element;
+    }
+
+    #body;
+    get body() {
+        if (!this.#body) this.InitStationEliment();
+        return this.#body;
     }
 
     constructor(name, type, id, direction = "") {
@@ -96,10 +127,10 @@ class Station {
     }
 
     InitStationEliment() {
-        // 생성자에서 실행시 type이 SUBWAY이면 nextStation이 과도하게 호출됨
         // 다음 Station가 생성자가 호출되는 시점에 없을 가능성 높음
-        let eliemnt = document.createElement("div");
-        eliemnt.className = "card mb-3 mx-lg-4";
+        let element = document.createElement("div");
+        element.className = "card mb-3 mx-lg-4";
+        element.style.height = "100%";
 
         let name = this.name;
         var icon = "&#xe530;";
@@ -108,7 +139,7 @@ class Station {
             name = name + "역";
         }
 
-        eliemnt.innerHTML = `
+        element.innerHTML = `
         <div class="card-header c-flex bg-transparent">
             <span class="material-symbols-outlined fs-1 me-2" alt="bus Station">${icon}</span>
             <div>
@@ -118,15 +149,40 @@ class Station {
         </div>
         <div class="card-body"></div>
         </div>`;
+        this.#element = element;
+        this.#body = document.createElement("div");
+        element.querySelector(".card-body").appendChild(this.#body);
+    }
 
-        this.#eliemnt = eliemnt;
+    async callAPI() {
+        let url = "";
+        if (this.type === Station.SUBWAY) {
+            let apiKey = "52627075506e69783435794c724775";
+            url = `http://swopenAPI.seoul.go.kr/api/subway/${apiKey}/json/realtimeStationArrival/0/100/${this.name}`;
+        } else {
+            let apiKey =
+                "dThA7Vda%2BCXPyf%2F8JYxoAQhLdLXM86eSR0siguahdaF8AEWteQHehqPoAVt3wRw2uA8P5UIwQJPHBAHXDWgyHA%3D%3D";
+            let queryParams = "?" + encodeURIComponent("serviceKey") + "=" + apiKey; /*Service Key*/
+            queryParams += "&" + encodeURIComponent("pageNo") + "=" + encodeURIComponent("1");
+            queryParams += "&" + encodeURIComponent("numOfRows") + "=" + encodeURIComponent("10");
+            queryParams += "&" + encodeURIComponent("_type") + "=" + encodeURIComponent("json");
+            queryParams +=
+                "&" + encodeURIComponent("cityCode") + "=" + encodeURIComponent(this.busCityCode);
+            queryParams += "&" + encodeURIComponent("nodeId") + "=" + encodeURIComponent(this.id);
+            url =
+                "http://apis.data.go.kr/1613000/ArvlInfoInqireService/getSttnAcctoArvlPrearngeInfoList" +
+                queryParams;
+        }
+
+        const response = await fetch(url);
+        let json = await response.json();
+        console.log(json);
+        this.apiJson = json;
+        return json;
     }
 
     static BUS = "bus";
     static SUBWAY = "subway";
-    static ALL = "all";
-    static UP = "up";
-    static DOWN = "down";
 }
 
 function clearSearchItem() {
@@ -160,7 +216,7 @@ function addSearchItem(station) {
             </div>
         </div>
         <div class="btnContainer c-flex gap-2">
-            <button type="button" class="btn btn-outline-dark c-btn-icon addStation">
+            <button type="button" class="btn btn-outline-dark c-btn-icon addStation" data-bs-dismiss="modal">
             <span class = "material-symbols-outlined"> &#xe145;</span>
             </button>
             <button type="button" class="btn btn-outline-dark c-btn-icon showMap" data-bs-target="#mapModal" data-bs-toggle="modal">
@@ -171,11 +227,15 @@ function addSearchItem(station) {
     searchModalBody.appendChild(searchItemElement);
     let addBtn = searchItemElement.querySelector("div .btnContainer .addStation");
     let mapBtn = searchItemElement.querySelector("div .btnContainer .showMap");
-    if(addBtn){
-        addBtn.addEventListener("click", () => {addStationItem(station)});
+    if (addBtn) {
+        addBtn.addEventListener("click", () => {
+            addStationItem(station);
+        });
     }
-    if(mapBtn){
-        mapBtn.addEventListener("click", () => {showMap(station)});
+    if (mapBtn) {
+        mapBtn.addEventListener("click", () => {
+            showMap(station);
+        });
     }
 }
 
@@ -187,7 +247,6 @@ function showMap(station) {
         }
         stationLatLngSearch(keyword, (data, status, pagination) => {
             if (status === kakao.maps.services.Status.OK) {
-                console.log(data);
                 station.latitude = Number(data[0].y);
                 station.longitude = Number(data[0].x);
                 showStation(station.latitude, station.longitude);
@@ -206,9 +265,128 @@ function addStationItem(station) {
 
     let colEliment = document.createElement("div");
     colEliment.className = "col";
-    colEliment.appendChild(station.eliemnt);
+    colEliment.appendChild(station.element);
 
     stationsContainer.appendChild(colEliment);
+
+    updateStationArrivalInfo(station);
+}
+
+function updateStationArrivalInfo(station) {
+    station.callAPI().then((json) => {
+        if (station.type === Station.SUBWAY) {
+            if (json.errorMessage.status != 200) {
+                alert("Subway API Error: " + json.errorMessage.status);
+                return;
+            }
+            let upName;
+            let upList = []; // 상행
+            let upNext = "";
+
+            let downName;
+            let downList = []; // 하행
+            let downNext = "";
+
+            for (const [key, value] of Object.entries(json.realtimeArrivalList)) {
+                if (value.subwayId == station.subwayId) {
+                    let info = { endStation: "", nowStation: "", time: 0, msg: "" };
+
+                    info.endStation = value.bstatnNm;
+                    info.nowStation = value.arvlMsg3;
+                    info.time = value.barvlDt;
+
+                    let regex = /\[([0-9]+)\]번째 전역/gm;
+                    let match = regex.exec(value.arvlMsg2);
+                    if (match) {
+                        info.msg = match[1] + "번째 전역";
+                    } else {
+                        info.msg = value.arvlMsg2;
+                    }
+                    if (value.updnLine == "상행" || value.updnLine == "내선") {
+                        if (!upName) {
+                            upName = value.updnLine;
+                        }
+                        if (!upNext) {
+                            let trainLineNm = value.trainLineNm.split(" - ");
+                            upNext = trainLineNm[1];
+                        }
+                        upList.push(info);
+                    } else {
+                        if (!downName) {
+                            downName = value.updnLine;
+                        }
+                        if (!downNext) {
+                            let trainLineNm = value.trainLineNm.split(" - ");
+                            downNext = trainLineNm[1];
+                        }
+                        downList.push(info);
+                    }
+                }
+            }
+
+            let body = station.body;
+            body.className = "d-grid";
+            body.style.gridTemplateColumns = "10fr 1fr 10fr";
+            body.style.height = "100%"
+            body.innerHTML = "";
+
+            let infos = document.createElement("div");
+            infos.innerHTML = `<div style="font-size: 0.9rem">
+            <span>${upName}</span></br>
+            <span class="text-muted">${upNext}</span>
+            </div>`;
+
+            upList.forEach((value) => {
+                let info = document.createElement("div");
+                info.className = "my-1";
+                let time = "";
+                if (value.time > 0) {
+                    time = `(${value.time}초)`;
+                }
+                info.innerHTML = `<sapn>${value.endStation}</sapn>
+                <sapn style="color: #52a1e9; word-break:keep-all"
+                    >${value.msg}</sapn
+                >
+                <sapn
+                    class="text-muted text-nowrap"
+                    style="font-size: 0.9rem"
+                    >${time}</sapn
+                >`;
+                infos.appendChild(info);
+            });
+            body.appendChild(infos);
+            
+            let bar = document.createElement("div");
+            bar.className = "vr";
+            body.appendChild(bar);
+
+            infos = document.createElement("div");
+            infos.innerHTML = `<div style="font-size: 0.9rem">
+            <span>${upName}</span></br>
+            <span class="text-muted">${upNext}</span>
+            </div>`;
+            
+            downList.forEach((value) => {
+                let info = document.createElement("div");
+                info.className = "my-1";
+                let time = "";
+                if (value.time > 0) {
+                    time = `(${value.time}초)`;
+                }
+                info.innerHTML = `<sapn>${value.endStation}</sapn>
+                <sapn style="color: #52a1e9; word-break:keep-all"
+                    >${value.msg}</sapn
+                >
+                <sapn
+                    class="text-muted text-nowrap"
+                    style="font-size: 0.9rem"
+                    >${time}</sapn
+                >`;
+                infos.appendChild(info);
+            });
+            body.appendChild(infos);
+        }
+    });
 }
 
 function csvToJSON(csv_string) {
@@ -330,13 +508,13 @@ var stationDictionary = {};
 var subwayList = [{ SUBWAY_ID: 1001, STATN_ID: 1001000100, STATN_NM: "소요산", 호선이름: "1호선" }];
 var subwayLine = {};
 
+// 철도 데이터 세팅
 requestSubwaySheet().then((result) => {
-    // 철도 데이터 세팅
     subwayList = result;
     subwayList.forEach((element) => {
         let station = new Station(element.STATN_NM, Station.SUBWAY, element.STATN_ID, Station.ALL);
         station.subwayId = element.SUBWAY_ID;
-        stationDictionary[element.STATN_NM] = station;
+        stationDictionary[element.STATN_ID] = station;
         if (!subwayLine[element.SUBWAY_ID]) {
             subwayLine[element.SUBWAY_ID] = element["호선이름"];
         }
@@ -352,23 +530,14 @@ fetch("./resource/국토교통부_전국 버스정류장 위치정보_20231016.c
         let decodedData = decoder.decode(new Uint8Array(buffer));
         let busJSON = csvToJSON(decodedData);
         busJSON.forEach((element) => {
-            let station = new Station(element["정류장명"], Station.BUS, element["모바일단축번호"]);
+            let station = new Station(element["정류장명"], Station.BUS, element["정류장번호"]);
             station.latitude = element["위도"];
             station.longitude = element["경도"];
-            stationDictionary[element["정류장명"]] = station;
+            station.busCityCode = element["도시코드"];
+            station.busId = element["모바일단축번호"];
+            stationDictionary[element["정류장번호"]] = station;
         });
     });
-
-// addStationItem(new Station("역 이름", "subway", "201", Station.UP));
-// addStationItem(new Station("역 이름", "subway", "k102", Station.DOWN));
-// addStationItem(new Station("역 이름", "subway", "203", Station.DOWN));
-// addStationItem(new Station("정류장 이름", "bus", "23456"));
-// addStationItem(new Station("정류장 이름", "bus", "12345"));
-// addStationItem(new Station("정류장 이름", "bus", "98765"));
-
-setTimeout(() => {
-    console.log(stationArray);
-}, 10 * 1000);
 
 document.querySelector("#searchInput").addEventListener("input", (event) => {
     // 검색 결과
