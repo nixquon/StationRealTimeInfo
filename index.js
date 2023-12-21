@@ -197,7 +197,7 @@ class Station {
         let url = "";
         if (this.type === Station.SUBWAY) {
             let apiKey = "52627075506e69783435794c724775";
-            url = `http://swopenAPI.seoul.go.kr/api/subway/${apiKey}/json/realtimeStationArrival/0/100/${this.name}`;
+            url = `//swopenAPI.seoul.go.kr/api/subway/${apiKey}/json/realtimeStationArrival/0/100/${this.name}`;
         } else {
             let apiKey =
                 "dThA7Vda%2BCXPyf%2F8JYxoAQhLdLXM86eSR0siguahdaF8AEWteQHehqPoAVt3wRw2uA8P5UIwQJPHBAHXDWgyHA%3D%3D";
@@ -209,7 +209,7 @@ class Station {
                 "&" + encodeURIComponent("cityCode") + "=" + encodeURIComponent(this.busCityCode);
             queryParams += "&" + encodeURIComponent("nodeId") + "=" + encodeURIComponent(this.id);
             url =
-                "http://apis.data.go.kr/1613000/ArvlInfoInqireService/getSttnAcctoArvlPrearngeInfoList" +
+                "//apis.data.go.kr/1613000/ArvlInfoInqireService/getSttnAcctoArvlPrearngeInfoList" +
                 queryParams;
         }
 
