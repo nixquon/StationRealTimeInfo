@@ -215,7 +215,7 @@ class Station {
 
         const response = await fetch(url);
         let json = await response.json();
-        console.log(json);
+        // console.log(json);
         this.apiJson = json;
         return json;
     }
@@ -478,7 +478,6 @@ function updateStationArrivalInfo(station) {
                 if (value.length > 1) {
                     max++;
                 }
-                console.log(max);
                 for (let i = 0; i < max; i++) {
                     let busInfo = document.createElement("div");
                     busInfo.className = "text-nowrap";
@@ -507,7 +506,6 @@ function updateStationArrivalInfo(station) {
 
 function removeStationItem(station) {
     let stationsContainer = document.querySelector("#stationsContainer div");
-    console.log(stationsContainer);
     stationsContainer.removeChild(station.element);
     let stationIdx;
     selectedStations.forEach((id, idx) => {
