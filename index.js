@@ -366,8 +366,8 @@ function updateStationArrivalInfo(station) {
 
             infos = document.createElement("div");
             infos.innerHTML = `<div style="font-size: 0.9rem">
-            <span>${upName}</span></br>
-            <span class="text-muted">${upNext}</span>
+            <span>${downName}</span></br>
+            <span class="text-muted">${downNext}</span>
             </div>`;
 
             downList.forEach((value) => {
