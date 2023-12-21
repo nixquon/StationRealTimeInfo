@@ -213,7 +213,6 @@ class Station {
                 "https://apis.data.go.kr/1613000/ArvlInfoInqireService/getSttnAcctoArvlPrearngeInfoList" +
                 queryParams;
         }
-
         const response = await fetch(url);
         let json = await response.json();
         // console.log(json);
@@ -685,9 +684,10 @@ fetch("./resource/국토교통부_전국 버스정류장 위치정보_20231016.c
         return res.arrayBuffer();
     })
     .then((buffer) => {
-        let decoder = new TextDecoder("euc-kr");
+        let decoder = new TextDecoder('euc-kr');
         let decodedData = decoder.decode(new Uint8Array(buffer));
         let busJSON = csvToJSON(decodedData);
+        console.log(busJSON);
         busJSON.forEach((element) => {
             let station = new Station(element["정류장명"], Station.BUS, element["정류장번호"]);
             station.latitude = element["위도"];
