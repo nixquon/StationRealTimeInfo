@@ -23,6 +23,10 @@ class Station {
     }
     /** @param {string} value */
     set id(value) {
+        if (!value) {
+            this.#id = "";
+            return;
+        }
         this.#id = value.toString();
     }
 
@@ -327,7 +331,7 @@ function updateStationArrivalInfo(station) {
             let body = station.body;
             body.className = "d-grid";
             body.style.gridTemplateColumns = "10fr 1fr 10fr";
-            body.style.height = "100%"
+            body.style.height = "100%";
             body.innerHTML = "";
 
             let infos = document.createElement("div");
@@ -355,7 +359,7 @@ function updateStationArrivalInfo(station) {
                 infos.appendChild(info);
             });
             body.appendChild(infos);
-            
+
             let bar = document.createElement("div");
             bar.className = "vr";
             body.appendChild(bar);
@@ -365,7 +369,7 @@ function updateStationArrivalInfo(station) {
             <span>${upName}</span></br>
             <span class="text-muted">${upNext}</span>
             </div>`;
-            
+
             downList.forEach((value) => {
                 let info = document.createElement("div");
                 info.className = "my-1";
