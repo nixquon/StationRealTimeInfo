@@ -50,6 +50,24 @@ header {
 main {
     padding-top: 75px;
 }
+#refreshButton {
+    position: fixed;
+    height: 3.5rem;
+    width: 3.5rem;
+    bottom: 20px;
+    right: 20px;
+    padding: 10px 20px;
+    font-size: 20px;
+    background-color: black;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    cursor: pointer;
+}
+
+#refreshButton:hover {
+    color: #1f1f1f;
+    background-color: #d0d0d0;}
 #searchInput:focus {
     box-shadow: none;
 }

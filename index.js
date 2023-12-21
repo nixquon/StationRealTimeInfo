@@ -298,9 +298,28 @@ function showMap(station) {
     showStation(station.latitude, station.longitude);
 }
 
+function InitStationEliment(start) {
+    if (!start) {
+        try {
+            selectedStations.forEach((id) => {
+                removeStationItem(stationDictionary[id], true);
+            });
+        } catch (e) {
+            console.log(e);
+        }
+    }
+    try {
+        selectedStations.forEach((id) => {
+            addStationItem(stationDictionary[id], true);
+        });
+    } catch (e) {
+        console.log(e);
+    }
+}
+
 /** @param {Station} station */
-function addStationItem(station) {
-    if (station.id in selectedStations) {
+function addStationItem(station, init) {
+    if (!init && selectedStations.includes(station.id)) {
         return;
     }
     let stationsContainer = document.querySelector("#stationsContainer");
@@ -310,8 +329,10 @@ function addStationItem(station) {
     colEliment.appendChild(station.element);
 
     stationsContainer.appendChild(colEliment);
-    selectedStations.push(station.id);
-
+    if (!init) {
+        selectedStations.push(station.id);
+        localStorage.setItem("stationIds", selectedStations);
+    }
     updateStationArrivalInfo(station);
 }
 
@@ -435,6 +456,7 @@ function updateStationArrivalInfo(station) {
             }
             let item = json.response.body.items.item;
             let body = station.body;
+            body.innerHTML = "";
 
             if (json.response.body.totalCount == 0) {
                 body.className = "text-center";
@@ -473,7 +495,7 @@ function updateStationArrivalInfo(station) {
             </div>`;
                 let busArriveInfos = document.createElement("div");
                 busArriveInfos.className =
-                    "d-flex flex-column flex-sm-row gap-sm-2 align-items-end";
+                    "d-flex flex-column flex-md-row gap-sm-2 align-items-end";
                 let max = 1;
                 if (value.length > 1) {
                     max++;
@@ -493,7 +515,7 @@ function updateStationArrivalInfo(station) {
                     busArriveInfos.appendChild(busInfo);
                     if (max - i == 2) {
                         let vr = document.createElement("div");
-                        vr.className = "vr d-none d-sm-inline-block";
+                        vr.className = "vr d-none d-md-inline-block";
                         busArriveInfos.appendChild(vr);
                     }
                 }
@@ -504,16 +526,20 @@ function updateStationArrivalInfo(station) {
     });
 }
 
-function removeStationItem(station) {
-    let stationsContainer = document.querySelector("#stationsContainer div");
-    stationsContainer.removeChild(station.element);
+function removeStationItem(station, init) {
+    let stationsContainer = document.querySelector("#stationsContainer");
+    stationsContainer.removeChild(station.element.parentElement);
     let stationIdx;
     selectedStations.forEach((id, idx) => {
         if (id == station.id) {
             stationIdx = idx;
         }
     });
-    selectedStations.slice(stationIdx, 1);
+
+    if (!init) {
+        selectedStations.splice(stationIdx, 1);
+        localStorage.setItem("stationIds", selectedStations);
+    }
 }
 
 function csvToJSON(csv_string) {
@@ -632,6 +658,10 @@ function disassembleHangul(hangul) {
 }
 
 var selectedStations = [];
+if (localStorage.getItem("stationIds", selectedStations)) {
+    selectedStations = localStorage.getItem("stationIds").split(",");
+    setTimeout(() => InitStationEliment(true), 2000);
+}
 var stationDictionary = {};
 var subwayList = [{ SUBWAY_ID: 1001, STATN_ID: 1001000100, STATN_NM: "소요산", 호선이름: "1호선" }];
 var subwayLine = {};
@@ -705,3 +735,30 @@ document.querySelector("#searchInput").addEventListener("input", (event) => {
         }
     }
 });
+
+var refreshBtn = document.querySelector("#refreshButton");
+refreshBtn.addEventListener("click", () => {
+    console.log("refresh");
+    InitStationEliment();
+    refreshBtn.disabled = true;
+    let originalHtml = refreshBtn.innerHTML;
+    setTimeout(() => {
+        refreshBtn.disabled = false;
+    }, 10 * 1000);
+    let timeCount = 0;
+    timeCount++;
+    refreshBtn.innerHTML = `<span>${11 - timeCount}</span>`;
+    let btnCounter = setInterval(() => {
+        timeCount++;
+        refreshBtn.innerHTML = `<span>${11 - timeCount}</span>`;
+        if (timeCount > 10) {
+            refreshBtn.innerHTML = originalHtml;
+            clearTimeout(btnCounter);
+        }
+    }, 1000);
+});
+
+setInterval(() => {
+    console.log("refresh");
+    InitStationEliment();
+}, 300 * 1000); // 5분마다 refresh
