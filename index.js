@@ -210,7 +210,7 @@ class Station {
                 "&" + encodeURIComponent("cityCode") + "=" + encodeURIComponent(this.busCityCode);
             queryParams += "&" + encodeURIComponent("nodeId") + "=" + encodeURIComponent(this.id);
             url =
-                "http://apis.data.go.kr/1613000/ArvlInfoInqireService/getSttnAcctoArvlPrearngeInfoList" +
+                "https://apis.data.go.kr/1613000/ArvlInfoInqireService/getSttnAcctoArvlPrearngeInfoList" +
                 queryParams;
         }
 
