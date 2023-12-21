@@ -544,7 +544,7 @@ function removeStationItem(station, init) {
 
 function csvToJSON(csv_string) {
     csv_string = csv_string.replace(/"/g, "");
-    const rows = csv_string.split("\r\n");
+    const rows = csv_string.split("\n");
     const jsonArray = [];
 
     const header = rows[0].split(",");
