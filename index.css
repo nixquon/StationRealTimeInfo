@@ -1,8 +1,8 @@
-.c-flex{
+.c-flex {
     display: flex !important;
     align-items: center !important;
 }
-.c-btn-icon{
+.c-btn-icon {
     display: flex;
     align-items: center;
     padding: var(--bs-btn-padding-y);
@@ -17,13 +17,14 @@ header {
     background-color: black;
     color: white;
     height: 70px;
+    z-index: 1;
 
-    .btnContainer>.btn{
+    .btnContainer > .btn {
         --bs-btn-color: #fff;
         --bs-btn-border-color: #343a40;
         --bs-btn-hover-color: #fff;
         --bs-btn-hover-bg: #212529;
-        --bs-btn-hover-border-color: #343a40 ;
+        --bs-btn-hover-border-color: #343a40;
         --bs-btn-focus-shadow-rgb: 33, 37, 41;
         --bs-btn-active-color: #fff;
         --bs-btn-active-bg: #343a40;
@@ -33,20 +34,22 @@ header {
         --bs-btn-disabled-bg: transparent;
         --bs-btn-disabled-border-color: #343a40;
         --bs-gradient: none;
-    
+
         --bs-btn-border-width: 0.15rem;
     }
 }
-#title{
+#title {
     font-size: 1.25rem;
 }
-#searchButtonBar{
+#searchButtonBar {
     color: #969696;
     width: 10rem;
     text-align: left;
     font-size: 0.9rem;
 }
-main{}
-#searchInput:focus{
+main {
+    padding-top: 75px;
+}
+#searchInput:focus {
     box-shadow: none;
 }
